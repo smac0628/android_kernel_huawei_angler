@@ -4,3 +4,9 @@ config BLU_PLUG
 	default n
 	help
 	  The Dynamic hotplug driver automatically online/offline CPUs proportional to system load.
+
+config INTELLI_PLUG
+        bool "Enable intelli-plug cpu hotplug driver"
+        default n
+        help
+          Generic Intelli-plug cpu hotplug driver for ARM SOCs		 
