@@ -106,11 +106,6 @@ static inline int msm_spm_config_low_power_mode(struct msm_spm_device *dev,
 	return -ENODEV;
 }
 
-static inline int msm_spm_config_low_power_mode_addr(
-	struct msm_spm_device *dev, unsigned int mode, bool notify_rpm)
-{
-	return -ENODEV;
-}
 static inline struct msm_spm_device *msm_spm_get_device_by_name
 						(const char *name)
 {
