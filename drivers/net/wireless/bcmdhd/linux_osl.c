@@ -62,6 +62,9 @@
 #define DHD_SKB_2PAGE_BUFSIZE	(PAGE_SIZE*2)
 #define DHD_SKB_4PAGE_BUFSIZE	(PAGE_SIZE*4)
 
+#define PREALLOC_FREE_MAGIC	0xFEDC
+#define PREALLOC_USED_MAGIC	0xFCDE
+
 #define STATIC_BUF_MAX_NUM	16
 #define STATIC_BUF_SIZE	(PAGE_SIZE*2)
 #define STATIC_BUF_TOTAL_LEN	(STATIC_BUF_MAX_NUM * STATIC_BUF_SIZE)
@@ -792,6 +795,20 @@ osl_pktfree(osl_t *osh, void *p, bool send)
 
 	PKTDBG_TRACE(osh, (void *) skb, PKTLIST_PKTFREE);
 
+#if defined(CONFIG_DHD_USE_STATIC_BUF) && defined(DHD_USE_STATIC_CTRLBUF)
+	if (skb && (skb->mac_len == PREALLOC_USED_MAGIC)) {
+		printk("%s: pkt %p is from static pool\n",
+			__FUNCTION__, p);
+		return;
+	}
+
+	if (skb && (skb->mac_len == PREALLOC_FREE_MAGIC)) {
+		printk("%s: pkt %p is from static pool and not in used\n",
+			__FUNCTION__, p);
+		return;
+	}
+#endif /* CONFIG_DHD_USE_STATIC_BUF && DHD_USE_STATIC_CTRLBUF */
+
 	/* perversion: we use skb->next to chain multi-skb packets */
 	while (skb) {
 		nskb = skb->next;
@@ -896,6 +913,7 @@ osl_pktget_static(osl_t *osh, uint len)
 #endif /* NET_SKBUFF_DATA_USES_OFFSET */
 			skb->len = len;
 #if defined(BCMPCIE)
+			skb->mac_len = PREALLOC_USED_MAGIC;
 			spin_unlock_irqrestore(&bcm_static_skb->osl_pkt_lock, flags);
 #else
 			up(&bcm_static_skb->osl_pkt_sem);
@@ -937,6 +955,7 @@ void
 osl_pktfree_static(osl_t *osh, void *p, bool send)
 {
 	int i;
+	struct sk_buff *skb = (struct sk_buff *)p;
 #if defined(BCMPCIE)
 	unsigned long flags;
 #endif /* BCMPCIE */
@@ -972,6 +991,13 @@ osl_pktfree_static(osl_t *osh, void *p, bool send)
 
 			bcm_static_skb->pkt_use[i] = 0;
 #if defined(BCMPCIE)
+			skb = bcm_static_skb->skb_8k[i - STATIC_PKT_1PAGE_NUM];
+			if (skb->mac_len != PREALLOC_USED_MAGIC) {
+				printk("%s: static pkt idx %d(%p) is not in used\n",
+					__FUNCTION__, i, p);
+			}
+
+			skb->mac_len = PREALLOC_FREE_MAGIC;
 			spin_unlock_irqrestore(&bcm_static_skb->osl_pkt_lock, flags);
 #else
 			up(&bcm_static_skb->osl_pkt_sem);
