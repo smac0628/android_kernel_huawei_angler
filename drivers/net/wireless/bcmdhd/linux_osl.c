@@ -87,7 +87,7 @@ static bcm_static_buf_t *bcm_static_buf = 0;
 
 #ifdef BCMPCIE
 #define STATIC_PKT_1PAGE_NUM	0
-#define STATIC_PKT_2PAGE_NUM	16
+#define STATIC_PKT_2PAGE_NUM	64
 #else
 #define STATIC_PKT_1PAGE_NUM	8
 #define STATIC_PKT_2PAGE_NUM	8
@@ -940,6 +940,10 @@ osl_pktfree_static(osl_t *osh, void *p, bool send)
 #if defined(BCMPCIE)
 	unsigned long flags;
 #endif /* BCMPCIE */
+
+	if (!p) {
+		return;
+	}
 
 	if (!bcm_static_skb) {
 		osl_pktfree(osh, p, send);
