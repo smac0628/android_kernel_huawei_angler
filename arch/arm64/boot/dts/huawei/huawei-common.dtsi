@@ -176,6 +176,7 @@
 	qcom,fg-cutoff-voltage-mv = <3400>;
 	qcom,irq-volt-empty-mv = <3200>;
 	qcom,vbat-estimate-diff-mv = <300>;
+	qcom,pmic-revid = <&pmi8994_revid>;
 };
 
 &i2c_5 {
