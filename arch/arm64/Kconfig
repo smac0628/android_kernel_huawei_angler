@@ -255,6 +255,8 @@ endmenu
 
 menu "Bus support"
 
+source arch/arm64/hotplug/Kconfig
+
 config ARM_AMBA
 	bool
 
