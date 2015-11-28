@@ -255,8 +255,6 @@ endmenu
 
 menu "Bus support"
 
-source arch/arm64/hotplug/Kconfig
-
 config ARM_AMBA
 	bool
 
@@ -406,6 +404,8 @@ config HOTPLUG_CPU
 	help
 	  Say Y here to experiment with turning CPUs off and on.  CPUs
 	  can be controlled through /sys/devices/system/cpu.
+
+source arch/arm64/hotplug/Kconfig
 
 source kernel/Kconfig.preempt
 
