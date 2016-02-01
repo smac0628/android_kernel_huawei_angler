@@ -372,7 +372,10 @@ static void audit_printk_skb(struct sk_buff *skb)
 	char *data = nlmsg_data(nlh);
 
 	if (nlh->nlmsg_type != AUDIT_EOE) {
-		pr_debug(KERN_NOTICE "type=%d %s\n", nlh->nlmsg_type, data);
+		if (printk_ratelimit())
+			printk(KERN_NOTICE "type=%d %s\n", nlh->nlmsg_type, data);
+		else
+			audit_log_lost("printk limit exceeded\n");
 	}
 
 	audit_hold_skb(skb);
@@ -1226,7 +1229,6 @@ out:
  */
 void audit_log_format(struct audit_buffer *ab, const char *fmt, ...)
 {
-#if 0
 	va_list args;
 
 	if (!ab)
@@ -1234,7 +1236,6 @@ void audit_log_format(struct audit_buffer *ab, const char *fmt, ...)
 	va_start(args, fmt);
 	audit_log_vformat(ab, fmt, args);
 	va_end(args);
-#endif
 }
 
 /**
